@@ -64,7 +64,18 @@ object WikiBrainHebb {
     val cleanGraph = removeSingletons(prunedGraph)
     println(cleanGraph.vertices.count() + " vertices left.")
 
+    val idsfileName: String = "ids_titles_for_20000_filtered.csv"
+
+    val idsDF = spark.sqlContext.read
+      .format("com.databricks.spark.csv")
+      .options(Map("header"->"false", "inferSchema"->"true"))
+      .load(path + idsfileName)
+
+    val idsTitlesMap = idsDF.collect.map(pair => pair{0} -> pair{1}).toMap
+
+    val graphWithIds = cleanGraph.mapVertices((vId, v) => idsTitlesMap(v))
+
     println("Saving graph...")
-    saveGraph(cleanGraph, path + "graph.gexf")
+    saveGraph(graphWithIds, path + "graph.gexf")
   }
 }
