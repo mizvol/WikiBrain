@@ -19,6 +19,7 @@ project/plugins/project/
 
 #Project specific
 src/main/resources/*
+project/.idea/*
 
 
 # User-specific stuff:
