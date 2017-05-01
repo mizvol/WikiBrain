@@ -36,12 +36,15 @@ package object Utils {
   def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double]): Double = {
     val commonKeys = m2.keySet.intersect(m1.keySet)
 
+    val m1Freq = m1.size
+    val m2Freq = m2.size
+
     if (commonKeys.isEmpty) 0
     else {
       var weight: Double = 0.0
       for (key <- commonKeys) {
-        val value1 = m1(key)
-        val value2 = m2(key)
+        val value1 = m1(key)/m1Freq
+        val value2 = m2(key)/m2Freq
         val threshold = min(value1, value2)/max(value1, value2)
         if (threshold > 0.5) weight += threshold
         else weight -= threshold
@@ -70,5 +73,14 @@ package object Utils {
     val pw = new PrintWriter(fileName)
     pw.write(toGexf(graph))
     pw.close
+  }
+
+  def getLargestConnectedComponent[VD: ClassTag, ED: ClassTag](g: Graph[VD, Double]): Graph[VD, Double] = {
+    val cc = g.connectedComponents()
+    val ids = cc.vertices.map((v: (Long, Long)) => v._2)
+    val largestId = ids.map((_, 1L)).reduceByKey(_ + _).sortBy(-_._2).keys.collect(){0}
+    val largestCC = cc.vertices.filter((v: (Long, Long)) => v._2 == largestId)
+    val lccVertices = largestCC.map(_._1).collect()
+    g.subgraph(vpred = (id, attr) => lccVertices.contains(id))
   }
 }

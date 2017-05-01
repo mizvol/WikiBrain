@@ -57,7 +57,7 @@ object WikiBrainHebb {
     val trainedGraph = graph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr, trplt.srcAttr)).mapVertices((vID, attr) => vID)
 
     println("Removing low weight edges...")
-    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 1.5)
+    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 0.5)
     println("Filtered graph with " + prunedGraph.edges.count() + " edges.")
 
     println("Removing singletone vertices...")
@@ -73,7 +73,7 @@ object WikiBrainHebb {
 
     val idsTitlesMap = idsDF.collect.map(pair => pair{0} -> pair{1}).toMap
 
-    val graphWithIds = cleanGraph.mapVertices((vId, v) => idsTitlesMap(v))
+    val graphWithIds = cleanGraph.mapVertices((vId, v) => idsTitlesMap(v).toString.replace('&', 'n'))
 
     println("Saving graph...")
     saveGraph(graphWithIds, path + "graph.gexf")
