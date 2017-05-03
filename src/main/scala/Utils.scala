@@ -33,12 +33,19 @@ package object Utils {
       .distinct,
       graph.edges)
 
-  def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double]): Double = {
-    val commonKeys = m2.keySet.intersect(m1.keySet)
-      .filter(hour => hour > 2200 & hour < 3000) // take only specified hours (e.g. the first month is 0 - 744 hours)
+  private def mean(m: Map[Int, Double]): Double = {
+    m.values.sum/m.size
+  }
 
-    val m1Freq = m1.size
-    val m2Freq = m2.size
+  def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double]): Double = {
+    val start = 3000
+    val stop = 4000
+
+    val commonKeys = m2.keySet.intersect(m1.keySet)
+      .filter(hour => hour > start & hour < stop) // take only specified hours (e.g. the first month is 0 - 744 hours)
+
+    val m1Freq = m1.count(pair => pair._1 > start & pair._1 < stop)
+    val m2Freq = m2.count(pair => pair._1 > start & pair._1 < stop)
 
     if (commonKeys.isEmpty) 0
     else {
@@ -54,7 +61,7 @@ package object Utils {
     }
   }
 
-  def toGexf[VD, ED](g: Graph[VD, ED]) =
+  private def toGexf[VD, ED](g: Graph[VD, ED]) =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
       "<gexf xmlns=\"http://www.gexf.net/1.2draft\" version=\"1.2\">\n" +
       " <graph mode=\"static\" defaultedgetype=\"directed\">\n" +
