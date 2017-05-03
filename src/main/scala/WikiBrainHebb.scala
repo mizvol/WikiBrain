@@ -57,13 +57,15 @@ object WikiBrainHebb {
     val trainedGraph = graph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr, trplt.srcAttr)).mapVertices((vID, attr) => vID)
 
     println("Removing low weight edges...")
-    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 0.5)
+    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 0.1)
     println("Filtered graph with " + prunedGraph.edges.count() + " edges.")
 
     println("Removing singletone vertices...")
     val cleanGraph = removeSingletons(prunedGraph)
     println(cleanGraph.vertices.count() + " vertices left.")
 
+
+    // Name vertices by IDs
     val idsfileName: String = "ids_titles_for_20000_filtered.csv"
 
     val idsDF = spark.sqlContext.read
@@ -73,7 +75,7 @@ object WikiBrainHebb {
 
     val idsTitlesMap = idsDF.collect.map(pair => pair{0} -> pair{1}).toMap
 
-    val graphWithIds = cleanGraph.mapVertices((vId, v) => idsTitlesMap(v).toString.replace('&', 'n'))
+    val graphWithIds = cleanGraph.mapVertices((vId, v) => idsTitlesMap(v).toString.replace('&', 'n').replace('\"', ' '))
 
     println("Saving graph...")
     saveGraph(graphWithIds, path + "graph.gexf")
