@@ -35,6 +35,7 @@ package object Utils {
 
   def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double]): Double = {
     val commonKeys = m2.keySet.intersect(m1.keySet)
+      .filter(hour => hour > 2200 & hour < 3000) // take only specified hours (e.g. the first month is 0 - 744 hours)
 
     val m1Freq = m1.size
     val m2Freq = m2.size
