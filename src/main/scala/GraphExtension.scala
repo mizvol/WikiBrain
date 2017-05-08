@@ -1,6 +1,6 @@
 package ch.epfl.lts2.GraphXExtension
 
-import org.apache.spark.graphx.{Edge, EdgeTriplet, Graph, GraphOps}
+import org.apache.spark.graphx.{Edge, EdgeTriplet, Graph}
 import scala.reflect.ClassTag
 
 /**
@@ -13,7 +13,7 @@ class GraphExtension[VD: ClassTag, ED: ClassTag](val graph: Graph[VD, ED]) {
     * @author Dave Ankur
     */
   def coarsen(pred: EdgeTriplet[VD, ED] => Boolean, reduce: (VD, VD) => VD): Graph[VD, ED] = {
-    // Restrict graph to contractable edges
+    // Restrict graph to contractible edges
     val subG = graph.subgraph(epred = pred)
     // Compute connected component id for each vertex
     val cc = subG.connectedComponents.vertices.cache()
