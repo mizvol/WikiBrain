@@ -3,6 +3,7 @@ package ch.epfl.lts2
 import java.io.PrintWriter
 
 import breeze.linalg.{max, min}
+import ch.epfl.lts2.GraphXExtension.GraphExtension
 import org.apache.spark.graphx.Graph
 
 import scala.reflect.ClassTag
@@ -91,4 +92,6 @@ package object Utils {
     val lccVertices = largestCC.map(_._1).collect()
     g.subgraph(vpred = (id, attr) => lccVertices.contains(id))
   }
+
+  implicit def graphExt[VD: ClassTag, ED: ClassTag](g: Graph[VD, ED]) = new GraphExtension(g)
 }
