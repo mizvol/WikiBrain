@@ -1,4 +1,4 @@
-package ch.epfl.lts2.GraphXExtension
+package ch.epfl.lts2
 
 import org.apache.spark.graphx.{Edge, EdgeTriplet, Graph}
 import scala.reflect.ClassTag
@@ -7,7 +7,7 @@ import scala.reflect.ClassTag
   * Created by volodymyrmiz on 08.05.17.
   */
 
-class GraphExtension[VD: ClassTag, ED: ClassTag](val graph: Graph[VD, ED]) {
+class GraphXExtension[VD: ClassTag, ED: ClassTag](val graph: Graph[VD, ED]) {
   /**
     * Merge edges that satisfy an edge predicate and collapse vertices connected by merged edges.
     * @author Dave Ankur
