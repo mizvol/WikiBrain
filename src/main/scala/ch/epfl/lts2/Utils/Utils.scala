@@ -4,7 +4,6 @@ import java.io.PrintWriter
 
 import breeze.linalg.{max, min}
 import org.apache.spark.graphx.Graph
-
 import scala.reflect.ClassTag
 
 /**
@@ -21,7 +20,7 @@ package object Utils {
     params.foreach(Logger.getLogger(_).setLevel(Level.OFF))
   }
 
-  def removeLowWeightEdges[VD: ClassTag, ED: ClassTag](graph: Graph[VD, ED], minWeight: Double) = {
+  def removeLowWeightEdges[VD: ClassTag, ED: ClassTag](graph: Graph[VD, ED], minWeight: Double): Graph[VD, ED] = {
     Graph(graph.vertices,
       graph.edges.filter(_.attr.toString.toDouble > minWeight)
     )
@@ -39,6 +38,27 @@ package object Utils {
 
   def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double]): Double = {
 
+    val commonKeys = m2.keySet.intersect(m1.keySet)
+
+    val m1Freq = m1.keys.size
+    val m2Freq = m2.keys.size
+
+    if (commonKeys.isEmpty) 0
+    else {
+      var weight: Double = 0.0
+      for (key <- commonKeys) {
+        val value1 = m1(key)/m1Freq
+        val value2 = m2(key)/m2Freq
+        val threshold = min(value1, value2)/max(value1, value2)
+        if (threshold > 0.5) weight += threshold
+        else weight -= threshold
+      }
+      weight
+    }
+  }
+
+  def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double], start: Int, stop: Int, limit: Int = 0): Double = {
+
     // take only specified hours (e.g. the first month is 0 - 744 hours)
     // 0-912 - October
     // 913 - 1633 - November
@@ -48,11 +68,8 @@ package object Utils {
     // 3796 - 4514 - March
     // 4515 - 5278 - April
 
-    val start = 4515
-    val stop = 5278
-
-    val m1Filtered = m1.filter(pair => pair._2 > 1000)
-    val m2Filtered = m2.filter(pair => pair._2 > 1000)
+    val m1Filtered = m1.filter(pair => pair._2 > limit)
+    val m2Filtered = m2.filter(pair => pair._2 > limit)
 
     val commonKeys = m2Filtered.keySet.intersect(m1Filtered.keySet)
       .filter(hour => hour > start & hour < stop)
@@ -106,4 +123,6 @@ package object Utils {
   }
 
   implicit def graphXExt[VD: ClassTag, ED: ClassTag](g: Graph[VD, ED]) = new GraphXExtension(g)
+
+  def isAllDigits(x: String) = x forall Character.isDigit
 }
