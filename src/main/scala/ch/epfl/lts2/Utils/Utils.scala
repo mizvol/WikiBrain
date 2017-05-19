@@ -122,6 +122,15 @@ package object Utils {
     g.subgraph(vpred = (id, attr) => lccVertices.contains(id))
   }
 
+  def getLargestConnectedComponent[VD: ClassTag, ED: ClassTag](g: Graph[VD, Double], order: Int): Graph[VD, Double] = {
+    val cc = g.connectedComponents()
+    val ids = cc.vertices.map((v: (Long, Long)) => v._2)
+    val largestId = ids.map((_, 1L)).reduceByKey(_ + _).sortBy(-_._2).keys.collect(){order}
+    val largestCC = cc.vertices.filter((v: (Long, Long)) => v._2 == largestId)
+    val lccVertices = largestCC.map(_._1).collect()
+    g.subgraph(vpred = (id, attr) => lccVertices.contains(id))
+  }
+
   implicit def graphXExt[VD: ClassTag, ED: ClassTag](g: Graph[VD, ED]) = new GraphXExtension(g)
 
   def isAllDigits(x: String) = x forall Character.isDigit
