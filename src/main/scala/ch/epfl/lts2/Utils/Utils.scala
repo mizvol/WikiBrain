@@ -3,14 +3,16 @@ package ch.epfl.lts2
 import java.io.PrintWriter
 
 import breeze.linalg.{max, min}
-import org.apache.spark.graphx.Graph
+import org.apache.spark.graphx.{Edge, Graph}
+import org.apache.spark.rdd.RDD
+
 import scala.reflect.ClassTag
 
 /**
   * Created by volodymyrmiz on 05.10.16.
   */
 package object Utils {
-  /** *
+  /**
     * Hide Apache Spark console logs.
     *
     * @param params List of logs to be suppressed.
@@ -22,7 +24,7 @@ package object Utils {
 
   def removeLowWeightEdges[VD: ClassTag, ED: ClassTag](graph: Graph[VD, ED], minWeight: Double): Graph[VD, ED] = {
     Graph(graph.vertices,
-      graph.edges.filter(_.attr.toString.toDouble > minWeight)
+      graph.edges.filter(_.attr.toString.toDouble  > minWeight)
     )
   }
 
@@ -36,12 +38,16 @@ package object Utils {
     m.values.sum/m.size
   }
 
-  def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double]): Double = {
-
+  def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double], isFiltered: Boolean): Double = {
     val commonKeys = m2.keySet.intersect(m1.keySet)
 
-    val m1Freq = m1.keys.size
-    val m2Freq = m2.keys.size
+    var m1Freq = 1
+    var m2Freq = 1
+
+    if (isFiltered) {
+      m1Freq = m1.keys.size
+      m2Freq = m2.keys.size
+    }
 
     if (commonKeys.isEmpty) 0
     else {
@@ -57,25 +63,21 @@ package object Utils {
     }
   }
 
-  def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double], start: Int, stop: Int, limit: Int = 0): Double = {
+  def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double], start: Int, stop: Int, upperBoundActivationsNumber: Int = 0, isFiltered: Boolean): Double = {
 
-    // take only specified hours (e.g. the first month is 0 - 744 hours)
-    // 0-912 - October
-    // 913 - 1633 - November
-    // 1634 - 2354 - December
-    // 2355 - 3074 - January
-    // 3075 - 3795 - February
-    // 3796 - 4514 - March
-    // 4515 - 5278 - April
-
-    val m1Filtered = m1.filter(pair => pair._2 > limit)
-    val m2Filtered = m2.filter(pair => pair._2 > limit)
+    val m1Filtered = m1.filter(pair => pair._2 > upperBoundActivationsNumber)
+    val m2Filtered = m2.filter(pair => pair._2 > upperBoundActivationsNumber)
 
     val commonKeys = m2Filtered.keySet.intersect(m1Filtered.keySet)
       .filter(hour => hour > start & hour < stop)
 
-    val m1Freq = m1Filtered.keys.count(key => key > start & key < stop)
-    val m2Freq = m2Filtered.keys.count(key => key > start & key < stop)
+    var m1Freq = 1
+    var m2Freq = 1
+
+    if (isFiltered) {
+      m1Freq = m1Filtered.keys.count(key => key > start & key < stop)
+      m2Freq = m2Filtered.keys.count(key => key > start & key < stop)
+    }
 
     if (commonKeys.isEmpty) 0
     else {
