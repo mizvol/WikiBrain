@@ -75,7 +75,6 @@ object WikiBrainHebb {
     val idsTitlesMap = idsDF.collect.map(pair => pair{0} -> pair{1}).toMap
 
     val graphWithIds = cleanGraph.mapVertices((vId, v) => idsTitlesMap(v).toString.replace('&', ' ').replace("""\n""", ""))
-//    val graphWithIds = getLargestConnectedComponent(cleanGraph.mapVertices((vId, v) => idsTitlesMap(v).toString.replace('&', 'n').replace('\"', ' ')))
 
     println(graphWithIds.vertices.count() + " vertices left.")
 
