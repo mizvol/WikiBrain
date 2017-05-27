@@ -1,11 +1,14 @@
+import ch.epfl.lts2.Globals.PATH_RESOURCES
 import ch.epfl.lts2.Utils._
 import org.apache.spark.graphx.{Edge, Graph, VertexId}
+import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
 /**
   * Created by volodymyrmiz on 30.04.17.
   */
-object Test {
+object Sandpit {
   def main(args: Array[String]): Unit = {
     suppressLogs(List("org", "akka"))
 
@@ -125,5 +128,11 @@ object Test {
 //      .load(path + "edges.csv")
 //
 //    edges.show()
+
+
+
+  val rdd: RDD[(Long, Map[Int, Double])] = spark.sparkContext.objectFile(PATH_RESOURCES + "RDDs/layeredSignalRDD")
+
+    println(rdd.mapValues(_.keys.size).take(20).mkString("\n"))
   }
 }
