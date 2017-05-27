@@ -124,7 +124,7 @@ package object Utils {
     g.subgraph(vpred = (id, attr) => lccVertices.contains(id))
   }
 
-  def getLargestConnectedComponent[VD: ClassTag, ED: ClassTag](g: Graph[VD, Double], order: Int): Graph[VD, Double] = {
+  def getLargestConnectedComponent[VD: ClassTag, ED: ClassTag](g: Graph[VD, Double], order: Int = 0): Graph[VD, Double] = {
     val cc = g.connectedComponents()
     val ids = cc.vertices.map((v: (Long, Long)) => v._2)
     val largestId = ids.map((_, 1L)).reduceByKey(_ + _).sortBy(-_._2).keys.collect(){order}
