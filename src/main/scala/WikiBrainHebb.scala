@@ -3,6 +3,8 @@ import ch.epfl.lts2.Utils._
 import ch.epfl.lts2.Globals._
 import org.apache.spark.graphx.{Edge, Graph, VertexId}
 import org.apache.spark.rdd.RDD
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 /**
   * Created by volodymyrmiz on 29.04.17.
@@ -12,7 +14,9 @@ object WikiBrainHebb {
 
     suppressLogs(List("org", "akka"))
 
-    println("WikiBrainHebb.scala")
+    val log: Logger = LoggerFactory.getLogger(this.getClass)
+
+    log.info("Create graph using dynamic signals")
 
     val spark = SparkSession.builder
       .master("local[*]")
@@ -24,9 +28,10 @@ object WikiBrainHebb {
     val path: String = "./src/main/resources/wikiTS/"
     val fileName: String = "signal_500.csv"
 
+    log.info("Read signal from disk")
     val rdd: RDD[(Long, Map[Int, Double])] = spark.sparkContext.objectFile(PATH_RESOURCES + "RDDs/tabularSignalRDD")
 
-    println("Total number of pages: " + rdd.count())
+    log.info("Total number of pages: " + rdd.count())
 
     val startTime = JAN_START
     val endTime = JAN_END
@@ -38,9 +43,9 @@ object WikiBrainHebb {
 //      .filter(v => v._2.keys.size > 10 & v._2.keys.size < 730)
       .filter(v => v._2.values.max > 5000)
 
-    println("Number of pages with a certain number visits: " + verticesRDD.count())
+    log.info("Number of pages with a certain number visits: " + verticesRDD.count())
 
-    println("Edges generation...")
+    log.info("Edges generation...")
     val edgeIndexesRDD = verticesRDD.map(_._1).repartition(12).cache()
     edgeIndexesRDD.take(1)
 
@@ -53,16 +58,16 @@ object WikiBrainHebb {
 
     val graph = Graph(verticesGX, edgesGX)
 
-    println("Applying Hebbian plasticity... N pages: " + verticesGX.count() + "; N edges: " + edgesGX.count())
+    log.info("Applying Hebbian plasticity... N pages: " + verticesGX.count() + "; N edges: " + edgesGX.count())
     val trainedGraph = graph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr, trplt.srcAttr, start = startTime, stop = endTime, isFiltered = false)).mapVertices((vID, attr) => vID)
 
-    println("Removing low weight edges...")
+    log.info("Removing low weight edges...")
     val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 500.0)
-    println("Filtered graph with " + prunedGraph.edges.count() + " edges.")
+    log.info("Filtered graph with " + prunedGraph.edges.count() + " edges.")
 
-    println("Removing singletone vertices...")
+    log.info("Removing singletone vertices...")
     val cleanGraph = removeSingletons(prunedGraph)
-    println(cleanGraph.vertices.count() + " vertices left.")
+    log.info(cleanGraph.vertices.count() + " vertices left.")
 
     // Name vertices by IDs
     val idsfileName: String = "ids_titles_for_500_filtered.csv"
@@ -76,9 +81,9 @@ object WikiBrainHebb {
 
     val graphWithIds = cleanGraph.mapVertices((vId, v) => idsTitlesMap(v).toString.replace('&', ' ').replace("""\n""", ""))
 
-    println(graphWithIds.vertices.count() + " vertices left.")
+    log.info(graphWithIds.vertices.count() + " vertices left.")
 
-    println("Saving graph...")
+    log.info("Saving graph...")
     saveGraph(graphWithIds, path + "graph.gexf")
   }
 }
