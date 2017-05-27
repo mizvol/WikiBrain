@@ -41,7 +41,7 @@ object ReadDataSet {
       .mapValues(pair => Vectors.sparse(pair._1.length, pair._1, pair._2).toSparse)
       .mapValues(visitsTS => visitsTS.indices.zip(visitsTS.values).toMap)
 
-    Path(PATH_RESOURCES + "layeredSignalRDD").deleteRecursively()
+    Path(PATH_RESOURCES + "RDDs/layeredSignalRDD").deleteRecursively()
     rdd.saveAsObjectFile(PATH_RESOURCES + "RDDs/layeredSignalRDD")
   }
 
@@ -53,7 +53,7 @@ object ReadDataSet {
 
     val rdd = df.rdd.map(v => (v{0}.toString.toLong, v.toSeq.toList.drop(1).map(_.toString.toDouble))).mapValues(v => (v.indices.map(_ + 1) zip v).toMap.filter(_._2 != 0))
 
-    Path(PATH_RESOURCES + "tabularSignalRDD").deleteRecursively()
+    Path(PATH_RESOURCES + "RDDs/tabularSignalRDD").deleteRecursively()
     rdd.saveAsObjectFile(PATH_RESOURCES + "RDDs/tabularSignalRDD")
   }
 }
