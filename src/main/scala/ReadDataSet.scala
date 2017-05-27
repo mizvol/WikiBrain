@@ -26,9 +26,9 @@ object ReadDataSet {
     val pathToCSV: String = PATH_RESOURCES + "csv/"
     val pathToTimeSeries: String = PATH_RESOURCES + "wikiTS/"
 
-//    readLayeredSignal(pathToTimeSeries + fileNameLayered, spark)
-//
-//    readTabularSignal(pathToTimeSeries + fileNameTabular, spark)
+    readLayeredSignal(pathToTimeSeries + fileNameLayered, spark)
+
+    readTabularSignal(pathToTimeSeries + fileNameTabular, spark)
 
     readStaticGraph(pathToCSV, pathToTimeSeries, spark)
   }
