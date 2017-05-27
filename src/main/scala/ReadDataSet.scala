@@ -1,6 +1,6 @@
 import ch.epfl.lts2.Utils._
 import ch.epfl.lts2.Globals._
-import org.apache.spark.graphx.VertexId
+import org.apache.spark.graphx.{Edge, VertexId}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
@@ -26,9 +26,9 @@ object ReadDataSet {
     val pathToCSV: String = PATH_RESOURCES + "csv/"
     val pathToTimeSeries: String = PATH_RESOURCES + "wikiTS/"
 
-    readLayeredSignal(pathToTimeSeries + fileNameLayered, spark)
-
-    readTabularSignal(pathToTimeSeries + fileNameTabular, spark)
+//    readLayeredSignal(pathToTimeSeries + fileNameLayered, spark)
+//
+//    readTabularSignal(pathToTimeSeries + fileNameTabular, spark)
 
     readStaticGraph(pathToCSV, pathToTimeSeries, spark)
   }
@@ -112,5 +112,18 @@ object ReadDataSet {
 
     Path(PATH_RESOURCES + "RDDs/staticVerticesRDD").deleteRecursively()
     verticesRDD.saveAsObjectFile(PATH_RESOURCES + "RDDs/staticVerticesRDD")
+
+    val vertexIDs = verticesRDD.map(_._1.toLong).collect().toSet
+
+    val edgesRDD: RDD[Edge[Double]] = edgesDF.as[(String, String)].rdd
+      .coalesce(12)
+      .map(e => (e._1.toLong, e._2.toLong))
+      .filter(e => vertexIDs.contains(e._1) & vertexIDs.contains(e._2))
+      .map(e => Edge(e._1, e._2, 0.0)).cache()
+
+    println("Edges filtered: " + edgesRDD.count())
+
+    Path(PATH_RESOURCES + "RDDs/staticEdgesRDD").deleteRecursively()
+    edgesRDD.saveAsObjectFile(PATH_RESOURCES + "RDDs/staticEdgesRDD")
   }
 }
