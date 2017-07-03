@@ -39,7 +39,7 @@ object WikiBrainHebbStatic {
 
     val trainedGraph = graph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = OCT_START, stop = APR_END, isFiltered = true))
 
-    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 100.0)
+    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 1.0)
 
     log.info("Vertices in trained graph: " + prunedGraph.vertices.count())
     log.info("Edges in trained graph: " + prunedGraph.edges.count())
