@@ -41,7 +41,6 @@ object WikiBrainHebbStatic {
 
     val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 1.0)
 
-    log.info("Vertices in trained graph: " + prunedGraph.vertices.count())
     log.info("Edges in trained graph: " + prunedGraph.edges.count())
 
     val cleanGraph = removeSingletons(prunedGraph)
