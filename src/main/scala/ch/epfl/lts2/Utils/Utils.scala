@@ -41,7 +41,6 @@ package object Utils {
   def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double], isFiltered: Boolean): Double = {
     val commonKeys = m2.keySet.intersect(m1.keySet)
 
-    // Frequency can be defined as a mean value of all activations in a time-series
     var m1Freq = 1
     var m2Freq = 1
 
@@ -72,7 +71,6 @@ package object Utils {
     val commonKeys = m2Filtered.keySet.intersect(m1Filtered.keySet)
       .filter(hour => hour > start & hour < stop)
 
-    // Frequency can be defined as a mean value of all activations in a time-series
     var m1Freq = 1
     var m2Freq = 1
 
