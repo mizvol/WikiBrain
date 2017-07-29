@@ -48,6 +48,11 @@ object Sandpit {
 //
 //    println("End")
 
+    import org.apache.spark.graphx.lib.ShortestPaths
+
+    val shortestPathGraph = ShortestPaths.run(g, Seq(1))
+
+    println(shortestPathGraph.vertices.filter(_._2.nonEmpty).mapValues(_.values.toList.head).collect().maxBy(_._2))
 
     /**
       * Load wiki page counts into a Spark DF
@@ -130,9 +135,9 @@ object Sandpit {
 //    edges.show()
 
 
-
-  val rdd: RDD[(Long, Map[Int, Double])] = spark.sparkContext.objectFile(PATH_RESOURCES + "RDDs/layeredSignalRDD")
-
-    println(rdd.mapValues(_.keys.size).take(20).mkString("\n"))
+//
+//  val rdd: RDD[(Long, Map[Int, Double])] = spark.sparkContext.objectFile(PATH_RESOURCES + "RDDs/layeredSignalRDD")
+//
+//    println(rdd.mapValues(_.keys.size).take(20).mkString("\n"))
   }
 }
