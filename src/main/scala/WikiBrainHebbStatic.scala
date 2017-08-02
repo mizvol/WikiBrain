@@ -52,7 +52,7 @@ object WikiBrainHebbStatic {
 //    val shortestPath = shortestPathGraph.vertices.map(_._2.values).filter(_.nonEmpty).map(_.toList.head.toString.toDouble).max()
 //    println(shortestPath)
 
-    val trainedGraph = graph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = OCT_START, stop = APR_END, isFiltered = true))
+    val trainedGraph = graph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = GERMANWINGS_START, stop = GERMANWINGS_END, isFiltered = true))
 
     //Check the number of 0-edges and write non-zero-edges to a file
 //    println(trainedGraph.edges.map(_.attr).filter(_ > 0).count())

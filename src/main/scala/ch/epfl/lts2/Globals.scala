@@ -30,4 +30,16 @@ package object Globals {
 
   val MONTH_HOURS = 744
 
+  val CHARLIE_START = 2496 // January 5
+  val CHARLIE_END = 2664 // after 7 days
+
+  val FERGUSON_START = 1464 // November 22
+  val FERGUSON_END = 1752 // December 3
+
+  val MALAYSIA_START = 3960 // March 6
+  val MALAYSIA_END = 4128 // March 13
+
+  val GERMANWINGS_START = 4368 // March 23
+  val GERMANWINGS_END = 4536 // March 30
+
 }
