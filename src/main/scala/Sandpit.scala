@@ -19,7 +19,24 @@ object Sandpit {
       .config("spark.executor.memory", "50g")
       .getOrCreate()
 
-//    val sc = spark.sparkContext
+    import org.apache.spark.mllib.stat.Statistics
+
+    val sc = spark.sparkContext
+
+    val seriesX: RDD[Double] = sc.parallelize(Array(1, 2, 3, 4, 5))
+    val seriesY: RDD[Double] = sc.parallelize(Array(500, 600, 700, 800, 9000))
+
+    val correlation: Double = Statistics.corr(seriesX, seriesY, "pearson")
+
+    println(correlation)
+
+    val map1: Map[Int, Double] = Map(1->1, 2->2, 3->3, 4->4, 5->5)
+    val map2: Map[Int, Double] = Map(1->500, 2->600, 3->700, 4->800, 5->9000)
+
+    println(pearsonCorrelation(map1, map2, start = 0, stop = 6))
+
+    val seq = Seq(1,2,9,7,5,11,4).sorted.foreach(println)
+
 //    implicit val ctx:SparkContext = spark.sparkContext
 
     //    val path: String = "./src/main/resources/wikiTS/"
@@ -35,11 +52,11 @@ object Sandpit {
     /**
       * Coarsening test @author Dave Ankur
       */
-    val verticesRDD = spark.sparkContext.parallelize(Seq[(VertexId, String)]((1, "one"), (2, "two"), (3, "three")), 2)
-    val edgesRDD = spark.sparkContext.parallelize((Seq(Edge(1, 2, true), Edge(2, 3, false), Edge(3, 1, false), Edge(10,11, false))))
-    val g: Graph[String, Boolean] = Graph(verticesRDD, edgesRDD)
-    println(g.edges.count())
-//
+//    val verticesRDD = spark.sparkContext.parallelize(Seq[(VertexId, String)]((1, "one"), (2, "two"), (3, "three")), 2)
+//    val edgesRDD = spark.sparkContext.parallelize((Seq(Edge(1, 2, true), Edge(2, 3, false), Edge(3, 1, false), Edge(10,11, false))))
+//    val g: Graph[String, Boolean] = Graph(verticesRDD, edgesRDD)
+//    println(g.edges.count())
+
 //    val c = g.coarsen(_.attr, _ + _).cache()
 //    val cV = c.vertices.collect.toSet
 //    assert(
@@ -48,11 +65,11 @@ object Sandpit {
 //
 //    println("End")
 
-    import org.apache.spark.graphx.lib.ShortestPaths
-
-    val shortestPathGraph = ShortestPaths.run(g, Seq(1))
-
-    println(shortestPathGraph.vertices.filter(_._2.nonEmpty).mapValues(_.values.toList.head).collect().maxBy(_._2))
+//    import org.apache.spark.graphx.lib.ShortestPaths
+//
+//    val shortestPathGraph = ShortestPaths.run(g, Seq(1))
+//
+//    println(shortestPathGraph.vertices.filter(_._2.nonEmpty).mapValues(_.values.toList.head).collect().maxBy(_._2))
 
     /**
       * Load wiki page counts into a Spark DF
