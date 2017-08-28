@@ -24,7 +24,7 @@ package object Utils {
 
   def removeLowWeightEdges[VD: ClassTag, ED: ClassTag](graph: Graph[VD, ED], minWeight: Double): Graph[VD, ED] = {
     Graph(graph.vertices,
-      graph.edges.filter(_.attr.toString.toDouble  > minWeight)
+      graph.edges.filter(_.attr.toString.toDouble > minWeight)
     )
   }
 
@@ -35,7 +35,7 @@ package object Utils {
       graph.edges)
 
   private def mean(m: Map[Int, Double]): Double = {
-    m.values.sum/m.size
+    m.values.sum / m.size
   }
 
   def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double], isFiltered: Boolean): Double = {
@@ -53,9 +53,9 @@ package object Utils {
     else {
       var weight: Double = 0.0
       for (key <- commonKeys) {
-        val value1 = m1(key)/m1Freq
-        val value2 = m2(key)/m2Freq
-        val similarity = min(value1, value2)/max(value1, value2)
+        val value1 = m1(key) / m1Freq
+        val value2 = m2(key) / m2Freq
+        val similarity = min(value1, value2) / max(value1, value2)
         if (similarity > 0.5) weight += similarity
         else weight -= similarity
       }
@@ -83,14 +83,67 @@ package object Utils {
     else {
       var weight: Double = 0.0
       for (key <- commonKeys) {
-        val value1 = m1Filtered(key)/m1Freq
-        val value2 = m2Filtered(key)/m2Freq
-        val similarity = min(value1, value2)/max(value1, value2)
+        val value1 = m1Filtered(key) / m1Freq
+        val value2 = m2Filtered(key) / m2Freq
+        val similarity = min(value1, value2) / max(value1, value2)
         if (similarity > 0.5) weight += similarity
         else weight -= similarity
       }
       weight
     }
+  }
+
+  def pearsonCorrelation(m1: Map[Int, Double], m2: Map[Int, Double], start: Int, stop: Int, isFiltered: Boolean = true): Double = {
+    val commonKeys = m2.keySet.intersect(m1.keySet).filter(hour => hour > start & hour < stop).toSeq.sorted
+
+    var sum = 0.0
+
+    val n = commonKeys.size
+    if (n == 0) return 0.0
+
+    var m1Freq = 1
+    var m2Freq = 1
+
+    if (isFiltered) {
+      m1Freq = m1.keys.count(key => key > start & key < stop)
+      m2Freq = m2.keys.count(key => key > start & key < stop)
+    }
+    for (t <- 0 until commonKeys.size by 24) {
+      var commonKeys_ = commonKeys.slice(t, t + 24)
+
+      val m1Common = m1.filterKeys(v => commonKeys_.contains(v)).mapValues(_ / m1Freq)
+      val m2Common = m2.filterKeys(v => commonKeys_.contains(v)).mapValues(_ / m2Freq)
+
+      val sum1 = m1Common.values.sum
+      val sum2 = m2Common.values.sum
+
+      val sum1Sq = m1Common.values.foldLeft(0.0)(_ + Math.pow(_, 2))
+      val sum2Sq = m2Common.values.foldLeft(0.0)(_ + Math.pow(_, 2))
+
+      val pSum = commonKeys_.foldLeft(0.0)((accum, element) => accum + m1Common(element) * m2Common(element))
+
+      val numerator = pSum - (sum1 * sum2 / n)
+      val denominator = Math.sqrt((sum1Sq - Math.pow(sum1, 2) / n) * (sum2Sq - Math.pow(sum2, 2) / n))
+
+      if (denominator == 0) sum = sum else sum = sum + numerator / denominator
+      //      val m1Common = m1.filterKeys(v => commonKeys.contains(v)).mapValues(_ / m1Freq)
+      //      val m2Common = m2.filterKeys(v => commonKeys.contains(v)).mapValues(_ / m2Freq)
+      //
+      //      val sum1 = m1Common.values.sum
+      //      val sum2 = m2Common.values.sum
+      //
+      //      val sum1Sq = m1Common.values.foldLeft(0.0)(_ + Math.pow(_, 2))
+      //      val sum2Sq = m2Common.values.foldLeft(0.0)(_ + Math.pow(_, 2))
+      //
+      //      val pSum = commonKeys.foldLeft(0.0)((accum, element) => accum + m1Common(element) * m2Common(element))
+      //
+      //      val numerator = pSum - (sum1 * sum2 / n)
+      //      val denominator = Math.sqrt((sum1Sq - Math.pow(sum1, 2) / n) * (sum2Sq - Math.pow(sum2, 2) / n))
+      //
+      //      if (denominator == 0) 0.0 else numerator / denominator
+    }
+
+    sum
   }
 
   private def toGexf[VD, ED](g: Graph[VD, ED]) =
@@ -118,7 +171,9 @@ package object Utils {
   def getLargestConnectedComponent[VD: ClassTag, ED: ClassTag](g: Graph[VD, Double]): Graph[VD, Double] = {
     val cc = g.connectedComponents()
     val ids = cc.vertices.map((v: (Long, Long)) => v._2)
-    val largestId = ids.map((_, 1L)).reduceByKey(_ + _).sortBy(-_._2).keys.collect(){0}
+    val largestId = ids.map((_, 1L)).reduceByKey(_ + _).sortBy(-_._2).keys.collect() {
+      0
+    }
     val largestCC = cc.vertices.filter((v: (Long, Long)) => v._2 == largestId)
     val lccVertices = largestCC.map(_._1).collect()
     g.subgraph(vpred = (id, attr) => lccVertices.contains(id))
@@ -127,7 +182,9 @@ package object Utils {
   def getLargestConnectedComponent[VD: ClassTag, ED: ClassTag](g: Graph[VD, Double], order: Int = 0): Graph[VD, Double] = {
     val cc = g.connectedComponents()
     val ids = cc.vertices.map((v: (Long, Long)) => v._2)
-    val largestId = ids.map((_, 1L)).reduceByKey(_ + _).sortBy(-_._2).keys.collect(){order}
+    val largestId = ids.map((_, 1L)).reduceByKey(_ + _).sortBy(-_._2).keys.collect() {
+      order
+    }
     val largestCC = cc.vertices.filter((v: (Long, Long)) => v._2 == largestId)
     val lccVertices = largestCC.map(_._1).collect()
     g.subgraph(vpred = (id, attr) => lccVertices.contains(id))
