@@ -3,8 +3,11 @@ package ch.epfl.lts2
 import java.io.PrintWriter
 
 import breeze.linalg.{max, min}
-import org.apache.spark.graphx.{Edge, Graph}
+import org.apache.spark.graphx.{Edge, Graph, VertexId}
+import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
+
+import ch.epfl.lts2.Globals
 
 import scala.reflect.ClassTag
 
@@ -156,15 +159,24 @@ package object Utils {
       "      </nodes>\n" +
       "      <edges>\n" +
       g.edges.map(e => "        <edge source=\"" + e.srcId +
-        "\" target=\"" + e.dstId + "\" label=\"" + e.attr +
+        "\" target=\"" + e.dstId + "\" label=\"" + e.attr + "\" weight=\"" + e.attr +
         "\" />\n").collect.mkString +
       "        </edges>\n" +
       " </graph>\n" +
       "</gexf>"
 
+  private def getSignal(g: Graph[(String, Map[Int, Double]), Double]) =
+    g.vertices.map(v => Vectors.sparse(Globals.TOTAL_HOURS, v._2._2.keys.toArray, v._2._2.values.toArray).toDense).collect.mkString
+
   def saveGraph[VD, ED](graph: Graph[VD, ED], fileName: String) = {
     val pw = new PrintWriter(fileName)
     pw.write(toGexf(graph))
+    pw.close
+  }
+
+  def saveSignal[VD, ED] (graph: Graph[(String, Map[Int, Double]), Double], fileName: String) = {
+    val pw = new PrintWriter(fileName)
+    pw.write(getSignal(graph))
     pw.close
   }
 
