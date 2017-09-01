@@ -166,7 +166,7 @@ package object Utils {
       "</gexf>"
 
   private def getSignal(g: Graph[(String, Map[Int, Double]), Double]) =
-    g.vertices.map(v => Vectors.sparse(Globals.TOTAL_HOURS, v._2._2.keys.toArray, v._2._2.values.toArray).toDense).collect.mkString
+    g.vertices.map(v => Vectors.sparse(Globals.TOTAL_HOURS, v._2._2.keys.toArray, v._2._2.values.toArray).toDense).collect.map(_.toString())
 
   def saveGraph[VD, ED](graph: Graph[VD, ED], fileName: String) = {
     val pw = new PrintWriter(fileName)
@@ -176,7 +176,7 @@ package object Utils {
 
   def saveSignal[VD, ED] (graph: Graph[(String, Map[Int, Double]), Double], fileName: String) = {
     val pw = new PrintWriter(fileName)
-    pw.write(getSignal(graph))
+    getSignal(graph).map(pw.write(_))
     pw.close
   }
 
