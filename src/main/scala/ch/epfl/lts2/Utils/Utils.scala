@@ -159,6 +159,22 @@ package object Utils {
       "      </nodes>\n" +
       "      <edges>\n" +
       g.edges.map(e => "        <edge source=\"" + e.srcId +
+        "\" target=\"" + e.dstId + "\" label=\"" + e.attr +
+        "\" />\n").collect.mkString +
+      "        </edges>\n" +
+      " </graph>\n" +
+      "</gexf>"
+
+  private def toGexfWeighted[VD, ED](g: Graph[VD, ED]) =
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+      "<gexf xmlns=\"http://www.gexf.net/1.2draft\" version=\"1.2\">\n" +
+      " <graph mode=\"static\" defaultedgetype=\"directed\">\n" +
+      " <nodes>\n" +
+      g.vertices.map(v => "      <node id=\"" + v._1 + "\" label=\"" +
+        v._2 + "\" />\n").collect.mkString +
+      "      </nodes>\n" +
+      "      <edges>\n" +
+      g.edges.map(e => "        <edge source=\"" + e.srcId +
         "\" target=\"" + e.dstId + "\" label=\"" + e.attr + "\" weight=\"" + e.attr +
         "\" />\n").collect.mkString +
       "        </edges>\n" +
@@ -168,9 +184,12 @@ package object Utils {
   private def getSignal(g: Graph[(String, Map[Int, Double]), Double]) =
     g.vertices.map(v => Vectors.sparse(Globals.TOTAL_HOURS, v._2._2.keys.toArray, v._2._2.values.toArray).toDense).collect.map(_.toString())
 
-  def saveGraph[VD, ED](graph: Graph[VD, ED], fileName: String) = {
+  def saveGraph[VD, ED](graph: Graph[VD, ED], weighted: Boolean = true, fileName: String) = {
     val pw = new PrintWriter(fileName)
-    pw.write(toGexf(graph))
+
+    if (weighted) pw.write(toGexfWeighted(graph))
+    else pw.write(toGexf(graph))
+
     pw.close
   }
 

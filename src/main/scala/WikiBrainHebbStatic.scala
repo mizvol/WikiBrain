@@ -24,7 +24,7 @@ object WikiBrainHebbStatic {
     val spark = SparkSession.builder
       .master("local[*]")
       .appName("Wiki Brain")
-      .config("spark.driver.maxResultSize", "10g")
+      .config("spark.driver.maxResultSize", "20g")
       .config("spark.executor.memory", "50g")
       .getOrCreate()
 
@@ -46,7 +46,6 @@ object WikiBrainHebbStatic {
     log.info("Vertices in graph: " + graph.vertices.count())
     log.info("Edges in graph: " + graph.edges.count())
 
-
     /**
       * Average path length. Initial graph
       */
@@ -57,7 +56,7 @@ object WikiBrainHebbStatic {
     //    val shortestPath = shortestPathGraph.vertices.map(_._2.values).filter(_.nonEmpty).map(_.toList.head.toString.toDouble).max()
     //    println(shortestPath)
     log.info("Start time: " + Calendar.getInstance().getTime())
-    val trainedGraph = graph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = JAN_START, stop = JAN_END, isFiltered = true))
+    val trainedGraph = graph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = DEC_START, stop = DEC_END, isFiltered = true))
 //    val trainedGraph = graph.mapTriplets(trplt => pearsonCorrelation(trplt.dstAttr._2, trplt.srcAttr._2, start = FEB_SRART, stop = FEB_END))
 
 //    Check the number of 0-edges and write non-zero-edges to a file
@@ -69,6 +68,7 @@ object WikiBrainHebbStatic {
 //          writer.write(x + "\n")  // however you want to format it
 //        }
 //        writer.close()
+
 
 
     val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 1.0)
@@ -90,8 +90,8 @@ object WikiBrainHebbStatic {
     //    val shortestPath = shortestPathGraph.vertices.map(_._2.values).filter(_.nonEmpty).map(_.toList.head.toString.toDouble).mean()
     //    println(shortestPath)
 
-    saveGraph(CC.mapVertices((vID, attr) => attr._1), PATH_RESOURCES + "graph.gexf")
-    saveSignal(CC, PATH_RESOURCES + "signal.txt")
+    saveGraph(CC.mapVertices((vID, attr) => attr._1), weighted = true, fileName = PATH_RESOURCES + "graph.gexf")
+//    saveSignal(CC, PATH_RESOURCES + "signal.txt")
 
     log.info("End time: " + Calendar.getInstance().getTime())
     spark.stop()

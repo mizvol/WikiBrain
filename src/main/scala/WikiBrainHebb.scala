@@ -84,6 +84,6 @@ object WikiBrainHebb {
     log.info(graphWithIds.vertices.count() + " vertices left.")
 
     log.info("Saving graph...")
-    saveGraph(graphWithIds, path + "graph.gexf")
+    saveGraph(graphWithIds, fileName = path + "graph.gexf")
   }
 }
