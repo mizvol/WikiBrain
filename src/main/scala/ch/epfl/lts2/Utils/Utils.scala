@@ -129,23 +129,7 @@ package object Utils {
       val denominator = Math.sqrt((sum1Sq - Math.pow(sum1, 2) / n) * (sum2Sq - Math.pow(sum2, 2) / n))
 
       if (denominator == 0) sum = sum else sum = sum + numerator / denominator
-      //      val m1Common = m1.filterKeys(v => commonKeys.contains(v)).mapValues(_ / m1Freq)
-      //      val m2Common = m2.filterKeys(v => commonKeys.contains(v)).mapValues(_ / m2Freq)
-      //
-      //      val sum1 = m1Common.values.sum
-      //      val sum2 = m2Common.values.sum
-      //
-      //      val sum1Sq = m1Common.values.foldLeft(0.0)(_ + Math.pow(_, 2))
-      //      val sum2Sq = m2Common.values.foldLeft(0.0)(_ + Math.pow(_, 2))
-      //
-      //      val pSum = commonKeys.foldLeft(0.0)((accum, element) => accum + m1Common(element) * m2Common(element))
-      //
-      //      val numerator = pSum - (sum1 * sum2 / n)
-      //      val denominator = Math.sqrt((sum1Sq - Math.pow(sum1, 2) / n) * (sum2Sq - Math.pow(sum2, 2) / n))
-      //
-      //      if (denominator == 0) 0.0 else numerator / denominator
     }
-
     sum
   }
 
