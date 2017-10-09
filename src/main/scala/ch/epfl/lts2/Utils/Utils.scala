@@ -25,22 +25,51 @@ package object Utils {
     params.foreach(Logger.getLogger(_).setLevel(Level.OFF))
   }
 
+  /**
+    * Remove edges with weights, lower than a threshold minWeight
+    *
+    * @param graph Graph to process
+    * @param minWeight Weight threshold
+    * @tparam VD
+    * @tparam ED
+    * @return Graph with edges that have weights higher than the minWeight.
+    */
   def removeLowWeightEdges[VD: ClassTag, ED: ClassTag](graph: Graph[VD, ED], minWeight: Double): Graph[VD, ED] = {
     Graph(graph.vertices,
       graph.edges.filter(_.attr.toString.toDouble > minWeight)
     )
   }
 
+  /**
+    * Removes singleton (disconnected) vertices from a given graph
+    *
+    * @param graph Graph to process
+    * @tparam VD
+    * @tparam ED
+    * @return Graph without singleton vertices
+    */
   def removeSingletons[VD: ClassTag, ED: ClassTag](graph: Graph[VD, ED]) =
     Graph(graph.triplets.map(et => (et.srcId, et.srcAttr))
       .union(graph.triplets.map(et => (et.dstId, et.dstAttr)))
       .distinct,
       graph.edges)
 
+  /**
+    * Compute mean of values stored in a Map
+    * @param m Map of values
+    * @return Mean of values stored in the given Map
+    */
   private def mean(m: Map[Int, Double]): Double = {
     m.values.sum / m.size
   }
 
+  /**
+    * Computes similarity of two time-series
+    * @param m1 Time-series
+    * @param m2 Time-series
+    * @param isFiltered Specifies if filtering is required
+    * @return Similarity measure
+    */
   def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double], isFiltered: Boolean): Double = {
     val commonKeys = m2.keySet.intersect(m1.keySet)
 
@@ -66,6 +95,16 @@ package object Utils {
     }
   }
 
+  /**
+    * Computes similarity of two time-series
+    * @param m1 Time-series
+    * @param m2 Time-series
+    * @param start Start of time-window
+    * @param stop End of time-window
+    * @param upperBoundActivationsNumber Lower limit of time-series values
+    * @param isFiltered Specifies if filtering is required
+    * @return Similarity measure
+    */
   def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double], start: Int, stop: Int, upperBoundActivationsNumber: Int = 0, isFiltered: Boolean): Double = {
 
     val m1Filtered = m1.filter(pair => pair._2 > upperBoundActivationsNumber)
@@ -96,6 +135,15 @@ package object Utils {
     }
   }
 
+  /**
+    * Computes Pearson correlation between two time-series
+    * @param m1 Time-series
+    * @param m2 Time-series
+    * @param start Start of time-window
+    * @param stop End of time-window
+    * @param isFiltered Specifies if filtering is required
+    * @return Pearson correlation value
+    */
   def pearsonCorrelation(m1: Map[Int, Double], m2: Map[Int, Double], start: Int, stop: Int, isFiltered: Boolean = true): Double = {
     val commonKeys = m2.keySet.intersect(m1.keySet).filter(hour => hour > start & hour < stop).toSeq.sorted
 
@@ -133,6 +181,13 @@ package object Utils {
     sum
   }
 
+  /**
+    * Converts GraphX graph to GEXF XML format. Returns unweighted graph.
+    * The code is taken from "Spark GraphX in Action" book
+    * by Michael S. Malak and Robin East.
+    * @param g GraphX graph
+    * @return XML string in GEXF format
+    */
   private def toGexf[VD, ED](g: Graph[VD, ED]) =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
       "<gexf xmlns=\"http://www.gexf.net/1.2draft\" version=\"1.2\">\n" +
@@ -149,6 +204,11 @@ package object Utils {
       " </graph>\n" +
       "</gexf>"
 
+  /**
+    * Converts GraphX graph to GEXF XML format. Returns weighted graph.
+    * @param g GraphX graph
+    * @return XML string in GEXF format
+    */
   private def toGexfWeighted[VD, ED](g: Graph[VD, ED]) =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
       "<gexf xmlns=\"http://www.gexf.net/1.2draft\" version=\"1.2\">\n" +
@@ -168,6 +228,12 @@ package object Utils {
   private def getSignal(g: Graph[(String, Map[Int, Double]), Double]) =
     g.vertices.map(v => Vectors.sparse(Globals.TOTAL_HOURS, v._2._2.keys.toArray, v._2._2.values.toArray).toDense).collect.map(_.toString())
 
+  /**
+    * Save GEXF graph to a file
+    * @param graph GraphX graph
+    * @param weighted Specify if you want a weighted graph
+    * @param fileName output file name
+    */
   def saveGraph[VD, ED](graph: Graph[VD, ED], weighted: Boolean = true, fileName: String) = {
     val pw = new PrintWriter(fileName)
 
@@ -177,12 +243,22 @@ package object Utils {
     pw.close
   }
 
+  /**
+    * Save time-series signal from vertices of a grpah
+    * @param graph GraphX graph
+    * @param fileName output file name
+    */
   def saveSignal[VD, ED] (graph: Graph[(String, Map[Int, Double]), Double], fileName: String) = {
     val pw = new PrintWriter(fileName)
     getSignal(graph).map(pw.write(_))
     pw.close
   }
 
+  /**
+    * Get the largest connected component (LCC) of a graph
+    * @param g GraphX graph
+    * @return LCC graph in GraphX format
+    */
   def getLargestConnectedComponent[VD: ClassTag, ED: ClassTag](g: Graph[VD, Double]): Graph[VD, Double] = {
     val cc = g.connectedComponents()
     val ids = cc.vertices.map((v: (Long, Long)) => v._2)
@@ -194,6 +270,12 @@ package object Utils {
     g.subgraph(vpred = (id, attr) => lccVertices.contains(id))
   }
 
+  /**
+    * Get the n-th largest connected component (LCC) of a graph
+    * @param g GraphX graph
+    * @param order order of the largest component
+    * @return n-th largest component in GraphX format
+    */
   def getLargestConnectedComponent[VD: ClassTag, ED: ClassTag](g: Graph[VD, Double], order: Int = 0): Graph[VD, Double] = {
     val cc = g.connectedComponents()
     val ids = cc.vertices.map((v: (Long, Long)) => v._2)
@@ -205,7 +287,9 @@ package object Utils {
     g.subgraph(vpred = (id, attr) => lccVertices.contains(id))
   }
 
+  // Add coarsening to GraphX API
   implicit def graphXExt[VD: ClassTag, ED: ClassTag](g: Graph[VD, ED]) = new GraphXExtension(g)
 
+  // Check if all characters in a string are digits
   def isAllDigits(x: String) = x forall Character.isDigit
 }
