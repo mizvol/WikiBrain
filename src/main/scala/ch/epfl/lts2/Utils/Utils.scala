@@ -105,7 +105,7 @@ package object Utils {
     * @param isFiltered Specifies if filtering is required
     * @return Similarity measure
     */
-  def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double], start: Int, stop: Int, upperBoundActivationsNumber: Int = 0, isFiltered: Boolean): Double = {
+  def compareTimeSeries(m1: Map[Int, Double], m2: Map[Int, Double], start: Int, stop: Int, upperBoundActivationsNumber: Int = 0, isFiltered: Boolean, lambda: Double = 0.5): Double = {
 
     val m1Filtered = m1.filter(pair => pair._2 > upperBoundActivationsNumber)
     val m2Filtered = m2.filter(pair => pair._2 > upperBoundActivationsNumber)
@@ -128,7 +128,7 @@ package object Utils {
         val value1 = m1Filtered(key) / m1Freq
         val value2 = m2Filtered(key) / m2Freq
         val similarity = min(value1, value2) / max(value1, value2)
-        if (similarity > 0.5) weight += similarity
+        if (similarity > lambda) weight += similarity
         else weight -= similarity
       }
       weight
@@ -226,7 +226,7 @@ package object Utils {
       "</gexf>"
 
   private def getSignal(g: Graph[(String, Map[Int, Double]), Double]) =
-    g.vertices.map(v => Vectors.sparse(Globals.TOTAL_HOURS, v._2._2.keys.toArray, v._2._2.values.toArray).toDense).collect.map(_.toString())
+    g.vertices.map(v => (v._1, Vectors.sparse(Globals.TOTAL_HOURS, v._2._2.keys.toArray, v._2._2.values.toArray).toDense)).collect.map(_.toString())
 
   /**
     * Save GEXF graph to a file
