@@ -69,3 +69,13 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+iptyhon/\.ipynb_checkpoints/
+
+*.m
+
+*.mat
+
+iptyhon/super_bowl_cluster\.csv
+
+iptyhon/super_bowl_index\.csv
