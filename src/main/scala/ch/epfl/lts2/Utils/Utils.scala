@@ -292,4 +292,22 @@ package object Utils {
 
   // Check if all characters in a string are digits
   def isAllDigits(x: String) = x forall Character.isDigit
+
+  def mapToArray(map: Map[Int, Double], length: Int) = {
+    val array = new Array[Double](length)
+    for ((k,v) <- map) array(k-1) = v
+    array
+  }
+
+  def stddev(xs: List[Double], avg: Double): Double = xs match {
+    case Nil => 0.0
+    case ys => math.sqrt((0.0 /: ys) {
+      (a,e) => a + math.pow(e - avg, 2.0)
+    } / xs.size)
+  }
+
+  def mean(xs: List[Double]): Double = xs match {
+    case Nil => 0.0
+    case ys => ys.sum / ys.size.toDouble
+  }
 }
