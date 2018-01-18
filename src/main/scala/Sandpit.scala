@@ -23,19 +23,49 @@ object Sandpit {
 
     val sc = spark.sparkContext
 
-    val seriesX: RDD[Double] = sc.parallelize(Array(1, 2, 3, 4, 5))
-    val seriesY: RDD[Double] = sc.parallelize(Array(500, 600, 700, 800, 9000))
+    def mapToArray(map: Map[Int, Double], length: Int) = {
+      val array = new Array[Double](length)
+      for ((k,v) <- map) array(k-1) = v
+      array
+    }
 
-    val correlation: Double = Statistics.corr(seriesX, seriesY, "pearson")
+    def stddev(xs: List[Double], avg: Double): Double = xs match {
+      case Nil => 0.0
+      case ys => math.sqrt((0.0 /: ys) {
+        (a,e) => a + math.pow(e - avg, 2.0)
+      } / xs.size)
+    }
 
-    println(correlation)
+    def mean(xs: List[Double]): Double = xs match {
+      case Nil => 0.0
+      case ys => ys.sum / ys.size.toDouble
+    }
 
-    val map1: Map[Int, Double] = Map(1->1, 2->2, 3->3, 4->4, 5->5)
-    val map2: Map[Int, Double] = Map(1->500, 2->600, 3->700, 4->800, 5->9000)
+    val map: Map[Int, Double] = Map(1->1.0, 3->3.0, 2->2.0, 4->4.0, 5->5.0, 10->10.0)
+    val array = mapToArray(map, 10).toList
 
-    println(pearsonCorrelation(map1, map2, start = 0, stop = 6))
+    val sdv = stddev(array, mean(array))
 
-    val seq = Seq(1,2,9,7,5,11,4).sorted.foreach(println)
+    val count = array.count(v => v > 2 * sdv)
+
+    print(count)
+
+    /**
+      * Pearson correlation test
+      */
+    //    val seriesX: RDD[Double] = sc.parallelize(Array(1, 2, 3, 4, 5))
+//    val seriesY: RDD[Double] = sc.parallelize(Array(500, 600, 700, 800, 9000))
+//
+//    val correlation: Double = Statistics.corr(seriesX, seriesY, "pearson")
+//
+//    println(correlation)
+//
+//    val map1: Map[Int, Double] = Map(1->1, 2->2, 3->3, 4->4, 5->5)
+//    val map2: Map[Int, Double] = Map(1->500, 2->600, 3->700, 4->800, 5->9000)
+//
+//    println(pearsonCorrelation(map1, map2, start = 0, stop = 6))
+//
+//    val seq = Seq(1,2,9,7,5,11,4).sorted.foreach(println)
 
 //    implicit val ctx:SparkContext = spark.sparkContext
 
