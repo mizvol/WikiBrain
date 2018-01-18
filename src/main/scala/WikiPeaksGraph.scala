@@ -51,9 +51,9 @@ object WikiPeaksGraph {
 
     val peaksGraph = Graph(peaksVertices, peaksEgdes)
 
-    log.info("Vertices in graph: " + peaksGraph.vertices.count())
-    log.info("Edges in graph: " + peaksGraph.edges.count())
+//    log.info("Vertices in graph: " + peaksGraph.vertices.count())
+//    log.info("Edges in graph: " + peaksGraph.edges.count())
 
-//    saveGraph(peaksGraph.mapVertices((id, v) => v._1), fileName = PATH_RESOURCES + "peaks_graph.gexf")
+    saveGraph(peaksGraph.mapVertices((id, v) => v._1), weighted = false, fileName = PATH_RESOURCES + "peaks_graph.gexf")
   }
 }
