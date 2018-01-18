@@ -1,5 +1,5 @@
 import ch.epfl.lts2.Globals.PATH_RESOURCES
-import ch.epfl.lts2.Utils._
+import ch.epfl.lts2.Utils.{stddev, _}
 import org.apache.spark.graphx.{Edge, Graph, VertexId}
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.rdd.RDD
@@ -46,9 +46,13 @@ object Sandpit {
 
     val sdv = stddev(array, mean(array))
 
+    println(sdv)
+
     val count = array.count(v => v > 2 * sdv)
 
-    print(count)
+    println(count)
+
+    println(map.values.count(l => l > stddev(array, map.values.sum / 10)))
 
     /**
       * Pearson correlation test
