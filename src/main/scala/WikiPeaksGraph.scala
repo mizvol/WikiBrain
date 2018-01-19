@@ -42,10 +42,10 @@ object WikiPeaksGraph {
     log.info("Edges in graph: " + graph.edges.count())
 
     val peaksVertices = graph.vertices.map(v => (v._1, (v._2._1, mapToList(v._2._2, TOTAL_HOURS), v._2._2)))
-      .filter(v => v._2._3.values.count(l => l > 3 * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS)) > 10)
+      .filter(v => v._2._3.values.count(l => l > 10 * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS)) > 5)
       .map(v=> (v._1, (v._2._1, v._2._3)))
 
-    val vIDs = peaksVertices.map(_._1).collect().toSeq
+    val vIDs = peaksVertices.map(_._1).collect().toSet
 
     val peaksEgdes = graph.edges.filter(e => vIDs.contains(e.dstId) & vIDs.contains(e.srcId))
 
