@@ -42,17 +42,22 @@ object WikiPeaksGraph {
     log.info("Edges in graph: " + graph.edges.count())
 
     val peaksVertices = graph.vertices.map(v => (v._1, (v._2._1, mapToList(v._2._2, TOTAL_HOURS), v._2._2)))
-      .filter(v => v._2._3.values.count(l => l > 10 * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS)) > 5)
+      .filter(v => v._2._3.filterKeys(hour => hour > JAN_START & hour < JAN_END).values.count(l => l > 5 * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS)) > 5)
       .map(v=> (v._1, (v._2._1, v._2._3)))
 
     val vIDs = peaksVertices.map(_._1).collect().toSet
 
     val peaksEgdes = graph.edges.filter(e => vIDs.contains(e.dstId) & vIDs.contains(e.srcId))
 
+    val pg = graph.mapTriplets(trplt => {if (vIDs.contains(trplt.dstId) & vIDs.contains(trplt.srcId)) 1.0 else 0.0})
+
+    import spark.implicits._
+    pg.edges.repartition(1).toDF.write.csv(PATH_RESOURCES + "edges_full.csv")
+
     val peaksGraph = Graph(peaksVertices, peaksEgdes)
 
-//    log.info("Vertices in graph: " + peaksGraph.vertices.count())
-//    log.info("Edges in graph: " + peaksGraph.edges.count())
+    log.info("Vertices in graph: " + peaksGraph.vertices.count())
+    log.info("Edges in graph: " + peaksGraph.edges.count())
 
     saveGraph(peaksGraph.mapVertices((id, v) => v._1), weighted = false, fileName = PATH_RESOURCES + "peaks_graph.gexf")
   }

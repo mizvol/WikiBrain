@@ -92,7 +92,7 @@ object WikiBrainHebbStatic {
 
 
     saveGraph(CC.mapVertices((vID, attr) => attr._1), weighted = false, fileName = PATH_RESOURCES + "graph.gexf")
-    saveSignal(CC, PATH_RESOURCES + "feb_id.txt")
+//    saveSignal(CC, PATH_RESOURCES + "feb_id.txt")
 
 //    saveGraph(trainedGraph.mapVertices((vID, attr) => attr._1), weighted = false, fileName = PATH_RESOURCES + "graph.gexf")
 //    import spark.implicits._
