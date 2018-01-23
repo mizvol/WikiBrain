@@ -41,24 +41,49 @@ object WikiPeaksGraph {
     log.info("Vertices in graph: " + graph.vertices.count())
     log.info("Edges in graph: " + graph.edges.count())
 
+    val start_time = FEB_SRART
+    val end_time = FEB_END
+
     val peaksVertices = graph.vertices.map(v => (v._1, (v._2._1, mapToList(v._2._2, TOTAL_HOURS), v._2._2)))
-      .filter(v => v._2._3.filterKeys(hour => hour > JAN_START & hour < JAN_END).values.count(l => l > 5 * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS)) > 5)
+      .filter(v => v._2._3.filterKeys(hour => hour > start_time & hour < end_time).values.count(l => l > 5 * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS)) > 5)
       .map(v=> (v._1, (v._2._1, v._2._3)))
 
     val vIDs = peaksVertices.map(_._1).collect().toSet
 
     val peaksEgdes = graph.edges.filter(e => vIDs.contains(e.dstId) & vIDs.contains(e.srcId))
 
-    val pg = graph.mapTriplets(trplt => {if (vIDs.contains(trplt.dstId) & vIDs.contains(trplt.srcId)) 1.0 else 0.0})
-
-    import spark.implicits._
-    pg.edges.repartition(1).toDF.write.csv(PATH_RESOURCES + "edges_full.csv")
+    //Write edges to file
+//    val pg = graph.mapTriplets(trplt => {if (vIDs.contains(trplt.dstId) & vIDs.contains(trplt.srcId)) 1.0 else 0.0})
+//
+//    import spark.implicits._
+//    pg.edges.repartition(1).toDF.write.csv(PATH_RESOURCES + "edges_full.csv")
 
     val peaksGraph = Graph(peaksVertices, peaksEgdes)
 
     log.info("Vertices in graph: " + peaksGraph.vertices.count())
     log.info("Edges in graph: " + peaksGraph.edges.count())
 
-    saveGraph(peaksGraph.mapVertices((id, v) => v._1), weighted = false, fileName = PATH_RESOURCES + "peaks_graph.gexf")
+    //LEARNING
+    val trainedGraph = peaksGraph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = start_time, stop = end_time, isFiltered = true, lambda = 0.5))
+
+    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 0.0)
+
+    log.info("Edges in trained graph: " + prunedGraph.edges.count())
+
+    val cleanGraph = removeSingletons(prunedGraph)
+    val CC = getLargestConnectedComponent(cleanGraph)
+
+    log.info("Vertices in LCC graph: " + CC.vertices.count())
+    log.info("Edges in LCC graph: " + CC.edges.count())
+
+
+    //Write edges to file
+    val ccIDs = CC.vertices.map(_._1).collect().toSet
+        val adj = graph.mapTriplets(trplt => {if (ccIDs.contains(trplt.dstId) & ccIDs.contains(trplt.srcId)) 1.0 else 0.0})
+
+        import spark.implicits._
+        adj.edges.repartition(1).toDF.write.csv(PATH_RESOURCES + "edges_full.csv")
+
+    saveGraph(CC.mapVertices((id, v) => v._1), weighted = false, fileName = PATH_RESOURCES + "peaks_graph.gexf")
   }
 }
