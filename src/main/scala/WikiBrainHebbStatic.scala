@@ -56,7 +56,7 @@ object WikiBrainHebbStatic {
     //    val shortestPath = shortestPathGraph.vertices.map(_._2.values).filter(_.nonEmpty).map(_.toList.head.toString.toDouble).max()
     //    println(shortestPath)
     log.info("Start time: " + Calendar.getInstance().getTime())
-    val trainedGraph = graph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = FEB_SRART, stop = FEB_END, isFiltered = true, lambda = 0.5))
+    val trainedGraph = graph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = CHARLIE_START, stop = CHARLIE_END, isFiltered = true, lambda = 0.5))
 //    val trainedGraph = graph.mapTriplets(trplt => pearsonCorrelation(trplt.dstAttr._2, trplt.srcAttr._2, start = FEB_SRART, stop = FEB_END))
 
 //    Check the number of 0-edges and write non-zero-edges to a file
@@ -99,6 +99,7 @@ object WikiBrainHebbStatic {
 //    trainedGraph.edges.repartition(1).toDF.write.csv(PATH_RESOURCES + "edges_full.csv")
 //    trainedGraph.vertices.map(v => (v._1, v._2._1)).repartition(1).toDF.write.csv(PATH_RESOURCES + "id_title.csv")
 //    saveSignal(trainedGraph, PATH_RESOURCES + "signal.txt")
+    saveSignal(CC, PATH_RESOURCES + "charlie_id.txt")
 
     log.info("End time: " + Calendar.getInstance().getTime())
     spark.stop()

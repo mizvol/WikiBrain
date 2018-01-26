@@ -41,8 +41,8 @@ object WikiPeaksGraph {
     log.info("Vertices in graph: " + graph.vertices.count())
     log.info("Edges in graph: " + graph.edges.count())
 
-    val start_time = FERGUSON_START
-    val end_time = FERGUSON_END
+    val start_time = CHARLIE_START
+    val end_time = CHARLIE_END
 
     val peaksVertices = graph.vertices.map(v => (v._1, (v._2._1, mapToList(v._2._2, TOTAL_HOURS), v._2._2)))
       .filter(v => v._2._3.filterKeys(hour => hour > start_time & hour < end_time).values.count(l => l > 5 * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS)) > 5)
@@ -59,6 +59,7 @@ object WikiPeaksGraph {
 //    pg.edges.repartition(1).toDF.write.csv(PATH_RESOURCES + "edges_full.csv")
 
     val peaksGraph = Graph(peaksVertices, peaksEgdes)
+//    val peaksGraph = graph
 
     log.info("Vertices in graph: " + peaksGraph.vertices.count())
     log.info("Edges in graph: " + peaksGraph.edges.count())
@@ -70,9 +71,11 @@ object WikiPeaksGraph {
     if (LEARN)
     {
     //LEARNING
-    val trainedGraph = peaksGraph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = start_time, stop = end_time, isFiltered = true, lambda = 0.5))
+//    val trainedGraph = peaksGraph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = start_time, stop = end_time, isFiltered = true, lambda = 0.5))
 
-    prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 1.0)
+    val trainedGraph = peaksGraph.mapTriplets(t => pearsonCorrelation(t.dstAttr._2, t.srcAttr._2, start = start_time, stop = end_time))
+
+    prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 0.0)
 
     log.info("Edges in trained graph: " + prunedGraph.edges.count())
     }
