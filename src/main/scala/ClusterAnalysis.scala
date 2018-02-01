@@ -33,10 +33,14 @@ object ClusterAnalysis {
     val GERMANWINGS_WEEK = "clusters/GermanWings_week.csv"
     val GERMANWINGS_MONTH = "clusters/GermanWings_month.csv"
 
+    val FERGUSON_STDDEV = "/clusters/ferguson_week_stddev.csv"
+    val CHARLIE_STDDEV = "/clusters/charlie_week_stddev.csv"
+    val GERMANWINGS_STDDEV = "/clusters/germanwings_week_stddev.csv"
+
     val df = spark.sqlContext.read
       .format("com.databricks.spark.csv")
       .options(Map("header" -> "false", "inferSchema" -> "false"))
-      .load(PATH_RESOURCES + GERMANWINGS_MONTH)
+      .load(PATH_RESOURCES + GERMANWINGS_STDDEV)
 
     val idList = df.select("_c0").collect().map(_.toSeq.toList).map(_.head.toString.toLong)
 
@@ -44,6 +48,6 @@ object ClusterAnalysis {
 
     val clusterDense = clusterMap.mapValues(v => v.toList).mapValues(v => Vectors.sparse(TOTAL_HOURS, v).toDense)
 
-    clusterDense.coalesce(1).saveAsTextFile(PATH_RESOURCES + "clusters/germanwings_month")
+    clusterDense.coalesce(1).saveAsTextFile(PATH_RESOURCES + "clusters/germanwings_stddev")
   }
 }
