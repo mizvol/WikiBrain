@@ -41,8 +41,8 @@ object WikiPeaksGraph {
     log.info("Vertices in graph: " + graph.vertices.count())
     log.info("Edges in graph: " + graph.edges.count())
 
-    val start_time = GERMANWINGS_START
-    val end_time = GERMANWINGS_END
+    val start_time = JAN_START
+    val end_time = JAN_END
     val BURST_RATE = 5
     val BURST_COUNT = 5
 
