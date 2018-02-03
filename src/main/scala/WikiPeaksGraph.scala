@@ -41,8 +41,8 @@ object WikiPeaksGraph {
     log.info("Vertices in graph: " + graph.vertices.count())
     log.info("Edges in graph: " + graph.edges.count())
 
-    val start_time = JAN_START
-    val end_time = JAN_END
+    val start_time = MAR_START
+    val end_time = MAR_END
     val BURST_RATE = 5
     val BURST_COUNT = 5
 
@@ -66,11 +66,18 @@ object WikiPeaksGraph {
     log.info("Vertices in graph: " + peaksGraph.vertices.count())
     log.info("Edges in graph: " + peaksGraph.edges.count())
 
-    val trainedGraph = peaksGraph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = start_time, stop = end_time, isFiltered = true, lambda = 0.5))
+    // STDDEV + HEBB
+//    val trainedGraph = peaksGraph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = start_time, stop = end_time, isFiltered = true, lambda = 0.5))
 
+    // STDDEV only
+    val trainedGraph = peaksGraph.mapTriplets(t => 1.0)
 //    val trainedGraph = peaksGraph.mapTriplets(t => pearsonCorrelation(t.dstAttr._2, t.srcAttr._2, start = start_time, stop = end_time))
 
-    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 0.0)
+    // STDDEV + HEBB
+//    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 0.0)
+
+    //STDDEV only
+    val prunedGraph = trainedGraph
 
     log.info("Edges in trained graph: " + prunedGraph.edges.count())
 
