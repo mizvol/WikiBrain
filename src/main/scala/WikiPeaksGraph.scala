@@ -41,13 +41,13 @@ object WikiPeaksGraph {
     log.info("Vertices in graph: " + graph.vertices.count())
     log.info("Edges in graph: " + graph.edges.count())
 
-    val start_time = MAR_START
-    val end_time = MAR_END
+    val start_time = JAN_START
+    val end_time = JAN_END
     val BURST_RATE = 5
     val BURST_COUNT = 5
 
     val peaksVertices = graph.vertices.map(v => (v._1, (v._2._1, mapToList(v._2._2, TOTAL_HOURS), v._2._2)))
-      .filter(v => v._2._3.filterKeys(hour => hour > start_time & hour < end_time).values.count(l => l > BURST_RATE * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS)) > BURST_COUNT)
+      .filter(v => v._2._3.filterKeys(hour => hour > start_time & hour < end_time).values.count(l => l > BURST_RATE * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS) + v._2._3.values.sum / TOTAL_HOURS) > BURST_COUNT)
       .map(v=> (v._1, (v._2._1, v._2._3)))
 
     val vIDs = peaksVertices.map(_._1).collect().toSet
@@ -67,17 +67,17 @@ object WikiPeaksGraph {
     log.info("Edges in graph: " + peaksGraph.edges.count())
 
     // STDDEV + HEBB
-//    val trainedGraph = peaksGraph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = start_time, stop = end_time, isFiltered = true, lambda = 0.5))
+    val trainedGraph = peaksGraph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = start_time, stop = end_time, isFiltered = true, lambda = 0.5))
 
     // STDDEV only
-    val trainedGraph = peaksGraph.mapTriplets(t => 1.0)
+//    val trainedGraph = peaksGraph.mapTriplets(t => 1.0)
 //    val trainedGraph = peaksGraph.mapTriplets(t => pearsonCorrelation(t.dstAttr._2, t.srcAttr._2, start = start_time, stop = end_time))
 
     // STDDEV + HEBB
-//    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 0.0)
+    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 0.0)
 
     //STDDEV only
-    val prunedGraph = trainedGraph
+//    val prunedGraph = trainedGraph
 
     log.info("Edges in trained graph: " + prunedGraph.edges.count())
 
@@ -95,8 +95,8 @@ object WikiPeaksGraph {
 //    val ccIDs = CC.vertices.map(_._1).collect().toSet
 //        val adj = graph.mapTriplets(trplt => {if (ccIDs.contains(trplt.dstId) & ccIDs.contains(trplt.srcId)) 1.0 else 0.0})
 //
-        import spark.implicits._
-        trainedGraph.edges.repartition(1).toDF.write.csv(PATH_RESOURCES + "edges_full.csv")
+//        import spark.implicits._
+//        trainedGraph.edges.repartition(1).toDF.write.csv(PATH_RESOURCES + "edges_full.csv")
 
     saveGraph(CC.mapVertices((id, v) => v._1), weighted = false, fileName = PATH_RESOURCES + "peaks_graph.gexf")
   }
