@@ -37,13 +37,15 @@ object WikiPeaksGraph {
     val edgesRDD: RDD[Edge[Double]] = spark.sparkContext.objectFile(PATH_RESOURCES + "RDDs/staticEdgesRDD")
       .filter(e => vertexIDs.contains(e.srcId) & vertexIDs.contains(e.dstId))
 
+    println(edgesRDD.foreach(println))
+
     val graph = Graph(verticesRDD, edgesRDD)
     log.info("Vertices in graph: " + graph.vertices.count())
     log.info("Edges in graph: " + graph.edges.count())
 
-    val start_time = JAN_START
-    val end_time = JAN_END
-    val BURST_RATE = 5
+    val start_time = APR_START
+    val end_time = APR_END
+    val BURST_RATE = 3
     val BURST_COUNT = 5
 
     val peaksVertices = graph.vertices.map(v => (v._1, (v._2._1, mapToList(v._2._2, TOTAL_HOURS), v._2._2)))
@@ -63,8 +65,8 @@ object WikiPeaksGraph {
     val peaksGraph = Graph(peaksVertices, peaksEgdes)
 //    val peaksGraph = graph
 
-    log.info("Vertices in graph: " + peaksGraph.vertices.count())
-    log.info("Edges in graph: " + peaksGraph.edges.count())
+    log.info("Vertices in peaks graph: " + peaksGraph.vertices.count())
+    log.info("Edges in peaks graph: " + peaksGraph.edges.count())
 
     // STDDEV + HEBB
     val trainedGraph = peaksGraph.mapTriplets(trplt => compareTimeSeries(trplt.dstAttr._2, trplt.srcAttr._2, start = start_time, stop = end_time, isFiltered = true, lambda = 0.5))
@@ -74,11 +76,12 @@ object WikiPeaksGraph {
 //    val trainedGraph = peaksGraph.mapTriplets(t => pearsonCorrelation(t.dstAttr._2, t.srcAttr._2, start = start_time, stop = end_time))
 
     // STDDEV + HEBB
-    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 0.0)
+    val prunedGraph = removeLowWeightEdges(trainedGraph, minWeight = 1.0)
 
     //STDDEV only
 //    val prunedGraph = trainedGraph
 
+    log.info("Vertices in trained graph: " + prunedGraph.vertices.count())
     log.info("Edges in trained graph: " + prunedGraph.edges.count())
 
     //Non-learning case
@@ -98,6 +101,6 @@ object WikiPeaksGraph {
 //        import spark.implicits._
 //        trainedGraph.edges.repartition(1).toDF.write.csv(PATH_RESOURCES + "edges_full.csv")
 
-    saveGraph(CC.mapVertices((id, v) => v._1), weighted = false, fileName = PATH_RESOURCES + "peaks_graph.gexf")
+//    saveGraph(CC.mapVertices((id, v) => v._1), weighted = false, fileName = PATH_RESOURCES + "peaks_graph.gexf")
   }
 }
