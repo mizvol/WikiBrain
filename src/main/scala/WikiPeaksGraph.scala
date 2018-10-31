@@ -1,6 +1,8 @@
+import java.util.Calendar
+
 import ch.epfl.lts2.Globals.PATH_RESOURCES
 import ch.epfl.lts2.Utils.suppressLogs
-import org.apache.spark.graphx.{Edge, Graph, VertexId}
+import org.apache.spark.graphx.{Edge, Graph, PartitionStrategy, VertexId}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
@@ -37,20 +39,21 @@ object WikiPeaksGraph {
     val edgesRDD: RDD[Edge[Double]] = spark.sparkContext.objectFile(PATH_RESOURCES + "RDDs/staticEdgesRDD")
       .filter(e => vertexIDs.contains(e.srcId) & vertexIDs.contains(e.dstId))
 
-    println(edgesRDD.foreach(println))
+    log.info("Start time: " + Calendar.getInstance().getTime())
 
     val graph = Graph(verticesRDD, edgesRDD)
     log.info("Vertices in graph: " + graph.vertices.count())
     log.info("Edges in graph: " + graph.edges.count())
 
-    val start_time = APR_START
-    val end_time = APR_END
-    val BURST_RATE = 3
-    val BURST_COUNT = 5
+    val start_time = FEB_SRART
+    val end_time = FEB_END
+    val BURST_RATE = 5
+    val BURST_COUNT = 3
 
     val peaksVertices = graph.vertices.map(v => (v._1, (v._2._1, mapToList(v._2._2, TOTAL_HOURS), v._2._2)))
-      .filter(v => v._2._3.filterKeys(hour => hour > start_time & hour < end_time).values.count(l => l > BURST_RATE * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS) + v._2._3.values.sum / TOTAL_HOURS) > BURST_COUNT)
-      .map(v=> (v._1, (v._2._1, v._2._3)))
+      .map(v => (v._1, (v._2._1, v._2._2, v._2._3, BURST_RATE * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS) + v._2._3.values.sum / TOTAL_HOURS)))
+      .filter(v => v._2._3.filterKeys(hour => hour > start_time & hour < end_time).values.count(l => l > v._2._4) > BURST_COUNT)
+      .map(v=> (v._1, (v._2._1, v._2._3.filterKeys(v._2._3(_) > v._2._4).map(identity))))
 
     val vIDs = peaksVertices.map(_._1).collect().toSet
 
@@ -94,6 +97,8 @@ object WikiPeaksGraph {
     log.info("Edges in LCC graph: " + CC.edges.count())
 
 
+    log.info("End time: " + Calendar.getInstance().getTime())
+
     //Write edges to file
 //    val ccIDs = CC.vertices.map(_._1).collect().toSet
 //        val adj = graph.mapTriplets(trplt => {if (ccIDs.contains(trplt.dstId) & ccIDs.contains(trplt.srcId)) 1.0 else 0.0})
@@ -101,6 +106,6 @@ object WikiPeaksGraph {
 //        import spark.implicits._
 //        trainedGraph.edges.repartition(1).toDF.write.csv(PATH_RESOURCES + "edges_full.csv")
 
-//    saveGraph(CC.mapVertices((id, v) => v._1), weighted = false, fileName = PATH_RESOURCES + "peaks_graph.gexf")
+    saveGraph(CC.mapVertices((id, v) => v._1), weighted = false, fileName = PATH_RESOURCES + "peaks_graph.gexf")
   }
 }
