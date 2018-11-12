@@ -1,5 +1,7 @@
+import java.io.PrintWriter
 import java.util.Calendar
 
+import ch.epfl.lts2.Globals
 import ch.epfl.lts2.Globals.PATH_RESOURCES
 import ch.epfl.lts2.Utils.suppressLogs
 import org.apache.spark.graphx.{Edge, Graph, PartitionStrategy, VertexId}
@@ -8,6 +10,7 @@ import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
 import ch.epfl.lts2.Utils._
 import ch.epfl.lts2.Globals._
+import org.apache.spark.mllib.linalg.Vectors
 
 /**
   * Created by volodymyrmiz on 18.01.18.
@@ -45,15 +48,15 @@ object WikiPeaksGraph {
     log.info("Vertices in graph: " + graph.vertices.count())
     log.info("Edges in graph: " + graph.edges.count())
 
-    val start_time = FEB_SRART
-    val end_time = FEB_END
+    val start_time = APR_START
+    val end_time = APR_END
     val BURST_RATE = 5
     val BURST_COUNT = 3
 
     val peaksVertices = graph.vertices.map(v => (v._1, (v._2._1, mapToList(v._2._2, TOTAL_HOURS), v._2._2)))
-      .map(v => (v._1, (v._2._1, v._2._2, v._2._3, BURST_RATE * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS) + v._2._3.values.sum / TOTAL_HOURS)))
-      .filter(v => v._2._3.filterKeys(hour => hour > start_time & hour < end_time).values.count(l => l > v._2._4) > BURST_COUNT)
-      .map(v=> (v._1, (v._2._1, v._2._3.filterKeys(v._2._3(_) > v._2._4).map(identity))))
+      .map(v => (v._1, (v._2._1, v._2._2, v._2._3, BURST_RATE * stddev(v._2._2, v._2._3.values.sum / TOTAL_HOURS) + v._2._3.values.sum / TOTAL_HOURS))) //compute threshold and save it as a 4th value in the set
+      .filter(v => v._2._3.filterKeys(hour => hour > start_time & hour < end_time).values.count(l => l > v._2._4) > BURST_COUNT) // filter vertices that do not have enough bursts
+      .map(v=> (v._1, (v._2._1, v._2._3.filterKeys(v._2._3(_) > v._2._4).map(identity)))) //filter time-series by keeping only bursts
 
     val vIDs = peaksVertices.map(_._1).collect().toSet
 
@@ -107,5 +110,19 @@ object WikiPeaksGraph {
 //        trainedGraph.edges.repartition(1).toDF.write.csv(PATH_RESOURCES + "edges_full.csv")
 
     saveGraph(CC.mapVertices((id, v) => v._1), weighted = false, fileName = PATH_RESOURCES + "peaks_graph.gexf")
+
+    val v_ids = CC.vertices.map(_._1).collect().toSet
+
+    val siggraph = Graph(graph.vertices.filter(v => v_ids.contains(v._1)).map(v => (v._1, (v._2._1, v._2._2))), graph.edges.filter(e => v_ids.contains(e.srcId) && v_ids.contains(e.dstId)))
+
+//    siggraph.vertices.take(10).foreach(println)
+
+    saveSignal(siggraph, PATH_RESOURCES + "apr_page_views.txt")
+
+//    val pw = new PrintWriter(PATH_RESOURCES + "feb_page_views.csv")
+//    siggraph.vertices.map(v => (v._1, Vectors.sparse(Globals.TOTAL_HOURS, v._2.keys.toArray, v._2.values.toArray).toDense))
+//      .collect.map(_.toString())
+//      .map(pw.write(_))
+//    pw.close
   }
 }
