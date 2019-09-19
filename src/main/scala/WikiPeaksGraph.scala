@@ -48,8 +48,8 @@ object WikiPeaksGraph {
     log.info("Vertices in graph: " + graph.vertices.count())
     log.info("Edges in graph: " + graph.edges.count())
 
-    val start_time = APR_START
-    val end_time = APR_END
+    val start_time = OCT_START
+    val end_time = OCT_END
     val BURST_RATE = 5
     val BURST_COUNT = 3
 
@@ -115,9 +115,7 @@ object WikiPeaksGraph {
 
     val siggraph = Graph(graph.vertices.filter(v => v_ids.contains(v._1)).map(v => (v._1, (v._2._1, v._2._2))), graph.edges.filter(e => v_ids.contains(e.srcId) && v_ids.contains(e.dstId)))
 
-//    siggraph.vertices.take(10).foreach(println)
-
-    saveSignal(siggraph, PATH_RESOURCES + "apr_page_views.txt")
+//    saveSignal(siggraph, PATH_RESOURCES + "apr_page_views.txt")
 
 //    val pw = new PrintWriter(PATH_RESOURCES + "feb_page_views.csv")
 //    siggraph.vertices.map(v => (v._1, Vectors.sparse(Globals.TOTAL_HOURS, v._2.keys.toArray, v._2.values.toArray).toDense))
