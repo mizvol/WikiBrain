@@ -1,4 +1,6 @@
 # WikiBrain
+**UPDATE:** the latest version of implementation for [Anomaly detection in Web and Social Networks](https://arxiv.org/abs/1901.09688) paper is available [here](https://github.com/epfl-lts2/sparkwiki/blob/master/src/main/scala/ch/epfl/lts2/wikipedia/PeakFinder.scala). Also, we have implemented a very intuitive and concise (but inefficient) Python implementation for practitioners to provide overall understanding of the algorithm. More details [here](https://github.com/mizvol/anomaly-detection).
+
 Implementation of the graph learning algorithm presented in [Wikipedia graph mining: dynamic structure of collective memory](https://arxiv.org/abs/1710.00398). The learning algorithm is inspired by the Hebbian learning theory.
 
 We also reported the results with interactive graph visualizations in an [accompanying blog post](http://blog.miz.space/research/2017/08/14/wikipedia-collective-memory-dynamic-graph-analysis-graphx-spark-scala-time-series-network/).
