@@ -12,6 +12,8 @@ Clone this project and extract the downloaded .zip files to `/src/main/resources
 
 Change `PATH_RESOURCES` in [`Globals.scala`](https://github.com/mizvol/WikiBrain/blob/master/src/main/scala/ch/epfl/lts2/Globals.scala) to the path to this project on your computer.
 
+If you want to reproduce just a part of the experiments, download pre-processed data from [here](https://drive.switch.ch/index.php/s/vEM6cTgft5MUK56) and unzip the files into `PATH_RESOURCES`. This should be enough to run most of the scripts in this repository.
+
 ## Runing the experiments
 Open [`WikiBrainHebbStatic.scala`](https://github.com/mizvol/WikiBrain/blob/master/src/main/scala/WikiBrainHebbStatic.scala) and run the code (Shift+F10 in Intellij Idea).
 
