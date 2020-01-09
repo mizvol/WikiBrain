@@ -32,7 +32,7 @@ Also, we have implemented a very intuitive and concise (but inefficient) Python 
 
 # WikiBrain
 
-Implementation of the graph learning algorithm presented in [Wikipedia graph mining: dynamic structure of collective memory](https://arxiv.org/abs/1710.00398). The learning algorithm is inspired by the Hebbian learning theory.
+In this repository, you can find an implementation of the graph learning algorithm presented in [Wikipedia graph mining: dynamic structure of collective memory](https://arxiv.org/abs/1710.00398). The learning algorithm is inspired by the Hebbian learning theory.
 
 We also reported the results with interactive graph visualizations in an [accompanying blog post](http://blog.miz.space/research/2017/08/14/wikipedia-collective-memory-dynamic-graph-analysis-graphx-spark-scala-time-series-network/).
 
