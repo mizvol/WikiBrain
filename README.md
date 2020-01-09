@@ -1,6 +1,6 @@
 **UPDATE:** the latest version of implementation for [Anomaly detection in Web and Social Networks](https://arxiv.org/abs/1901.09688) paper is available [here](https://github.com/epfl-lts2/sparkwiki/blob/master/src/main/scala/ch/epfl/lts2/wikipedia/PeakFinder.scala). 
 
-To run the code, you will need to pre-process Wikipedia pagedumps and pagecounts. To do that, follow the [instructions]().
+To run the code, you will need to pre-process Wikipedia pagedumps and pagecounts. To do that, follow the [instructions](https://github.com/epfl-lts2/sparkwiki/tree/master/helpers).
 
 Once you have pre-processed the dumps, you can run the algorithm using `spark-submit` from the [sparkwiki repository](https://github.com/epfl-lts2/sparkwiki) that you've used for dumps pre-processing. See an example of the command below:
 
